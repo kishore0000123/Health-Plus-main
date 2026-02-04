@@ -10,13 +10,15 @@ function AppointmentForm() {
 
   const [patientName, setPatientName] = useState("");
   const [patientNumber, setPatientNumber] = useState("");
+  const [patientEmail, setPatientEmail] = useState("");
   const [patientGender, setPatientGender] = useState("default");
   const [appointmentTime, setAppointmentTime] = useState("");
   const [preferredMode, setPreferredMode] = useState("default");
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [formErrors, setFormErrors] = useState({});
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     // Validate form inputs
@@ -54,19 +56,58 @@ function AppointmentForm() {
       return;
     }
 
-    // Reset form fields and errors after successful submission
-    setPatientName("");
-    setPatientNumber("");
-    setPatientGender("default");
-    setAppointmentTime("");
-    setPreferredMode("default");
-    setFormErrors({});
+    // Submit to backend
+    setIsLoading(true);
+    try {
+      const response = await fetch('http://localhost:5000/api/appointments', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          patientName: patientName.trim(),
+          patientNumber: patientNumber.trim(),
+          patientEmail: patientEmail.trim() || undefined,
+          patientGender,
+          appointmentTime,
+          preferredMode,
+        }),
+      });
 
-    toast.success("Appointment Scheduled !", {
-      position: toast.POSITION.TOP_CENTER,
-      onOpen: () => setIsSubmitted(true),
-      onClose: () => setIsSubmitted(false),
-    });
+      const data = await response.json();
+
+      if (data.success) {
+        // Reset form fields and errors after successful submission
+        setPatientName("");
+        setPatientNumber("");
+        setPatientEmail("");
+        setPatientGender("default");
+        setAppointmentTime("");
+        setPreferredMode("default");
+        setFormErrors({});
+
+        const message = data.emailSent 
+          ? "Appointment Scheduled! Confirmation email sent." 
+          : "Appointment Scheduled Successfully!";
+          
+        toast.success(message, {
+          position: toast.POSITION.TOP_CENTER,
+          onOpen: () => setIsSubmitted(true),
+          onClose: () => setIsSubmitted(false),
+        });
+      } else {
+        toast.error(data.message || "Failed to schedule appointment", {
+          position: toast.POSITION.TOP_CENTER,
+        });
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      toast.error("Failed to connect to server. Please try again.", {
+        position: toast.POSITION.TOP_CENTER,
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -108,6 +149,18 @@ function AppointmentForm() {
 
           <br />
           <label>
+            Patient Email (Optional):
+            <input
+              type="email"
+              value={patientEmail}
+              onChange={(e) => setPatientEmail(e.target.value)}
+              placeholder="email@example.com"
+            />
+            <small style={{color: '#666', fontSize: '12px'}}>Enter email to receive confirmation</small>
+          </label>
+
+          <br />
+          <label>
             Patient Gender:
             <select
               value={patientGender}
@@ -129,6 +182,7 @@ function AppointmentForm() {
               type="datetime-local"
               value={appointmentTime}
               onChange={(e) => setAppointmentTime(e.target.value)}
+              min={new Date(new Date().getTime() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 16)}
               required
             />
             {formErrors.appointmentTime && <p className="error-message">{formErrors.appointmentTime}</p>}
@@ -150,11 +204,11 @@ function AppointmentForm() {
           </label>
 
           <br />
-          <button type="submit" className="text-appointment-btn">
-            Confirm Appointment
+          <button type="submit" className="text-appointment-btn" disabled={isLoading}>
+            {isLoading ? "Scheduling..." : "Confirm Appointment"}
           </button>
 
-          <p className="success-message" style={{display: isSubmitted ? "block" : "none"}}>Appointment details has been sent to the patients phone number via SMS.</p>
+          <p className="success-message" style={{display: isSubmitted ? "block" : "none"}}>Appointment details has been saved successfully!</p>
         </form>
       </div>
 

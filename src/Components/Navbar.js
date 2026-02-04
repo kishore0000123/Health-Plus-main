@@ -1,20 +1,42 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faCommentDots,
   faBars,
   faXmark,
+  faUser,
+  faSignOutAlt,
 } from "@fortawesome/free-solid-svg-icons";
 import "../Styles/Navbar.css";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 
 function Navbar() {
+  const navigate = useNavigate();
   const [nav, setNav] = useState(false);
   const [isButtonDisabled, setIsButtonDisabled] = useState(false);
+  const [user, setUser] = useState(null);
+
+  useEffect(() => {
+    // Check if user is logged in
+    const userData = localStorage.getItem('user');
+    if (userData) {
+      setUser(JSON.parse(userData));
+    }
+  }, []);
 
   const openNav = () => {
     setNav(!nav);
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    setUser(null);
+    toast.success("Logged out successfully", {
+      position: toast.POSITION.TOP_CENTER,
+    });
+    navigate("/");
   };
 
   const handleChatBtnClick = () => {
@@ -64,8 +86,23 @@ function Navbar() {
         </li>
       </ul>
 
+      {user ? (
+        <div className="navbar-user">
+          <span className="user-name">
+            <FontAwesomeIcon icon={faUser} /> {user.name}
+          </span>
+          <button className="navbar-btn logout-btn" onClick={handleLogout}>
+            <FontAwesomeIcon icon={faSignOutAlt} /> Logout
+          </button>
+        </div>
+      ) : (
+        <Link to="/login" className="navbar-btn">
+          <FontAwesomeIcon icon={faUser} /> Login
+        </Link>
+      )}
+
       <button
-        className="navbar-btn"
+        className="navbar-btn chat-btn"
         type="button"
         disabled={isButtonDisabled}
         onClick={handleChatBtnClick}

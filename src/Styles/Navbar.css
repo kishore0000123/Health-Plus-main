@@ -58,6 +58,31 @@
     background-color: white;
     border: 1px solid #1A8EFD;
 }
+/* User Menu */
+.navbar-user {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+.user-name {
+    font-family: 'Rubik', sans-serif;
+    font-size: 16px;
+    color: #333;
+    font-weight: 500;
+}
+.logout-btn {
+    background-color: #ff4444;
+    padding: 12px 18px;
+    font-size: 16px;
+}
+.logout-btn:hover {
+    color: white;
+    background-color: #cc0000;
+    border-color: #cc0000;
+}
+.chat-btn {
+    margin-left: 12px;
+}
 /* Hamburger Icon */
 .mobile-nav {
     display: none;
@@ -117,10 +142,27 @@
 }
 /* Responsive */
 @media screen and (max-width: 900px) {
-    .navbar-btn, .navbar-items {
+    .navbar-btn, .navbar-items, .navbar-user {
         display: none;
     }
     .mobile-nav {
         display: block;
+    }
+    .navbar-section {
+        padding: 0 20px;
+        height: 70px;
+    }
+}
+
+@media screen and (max-width: 600px) {
+    .navbar-section {
+        padding: 0 16px;
+        height: 65px;
+    }
+    .navbar-title {
+        font-size: 24px;
+    }
+    .navbar-sign {
+        font-size: 32px;
     }
 }
