@@ -4,7 +4,7 @@ const cors = require('cors');
 const bodyParser = require('body-parser');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const { sendAppointmentConfirmation, sendAppointmentReminder } = require('./emailService');
+const { sendAppointmentConfirmation } = require('./emailService');
 const authMiddleware = require('./authMiddleware');
 require('dotenv').config();
 
@@ -284,7 +284,8 @@ app.post('/api/appointments', async (req, res) => {
       patientEmail,
       patientGender,
       appointmentTime,
-      preferredMode
+      preferredMode,
+      status: 'confirmed'
     });
 
     await appointment.save();
@@ -295,6 +296,7 @@ app.post('/api/appointments', async (req, res) => {
         patientName,
         patientEmail,
         patientNumber,
+        patientGender,
         appointmentTime,
         preferredMode
       });
