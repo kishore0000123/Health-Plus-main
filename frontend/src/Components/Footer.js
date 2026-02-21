@@ -91,7 +91,7 @@ function Footer() {
         <ul className="ft-social-links">
           <li>
             <a
-              href=""
+              href="https://www.facebook.com"
               title="Facebook"
               target="_blank"
               rel="noopener noreferrer"

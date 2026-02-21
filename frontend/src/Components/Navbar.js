@@ -10,11 +10,12 @@ import {
 import "../Styles/Navbar.css";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
+import LiveChat from "./LiveChat";
 
 function Navbar() {
   const navigate = useNavigate();
   const [nav, setNav] = useState(false);
-  const [isButtonDisabled, setIsButtonDisabled] = useState(false);
+  const [isChatOpen, setIsChatOpen] = useState(false);
   const [user, setUser] = useState(null);
 
   useEffect(() => {
@@ -40,13 +41,11 @@ function Navbar() {
   };
 
   const handleChatBtnClick = () => {
-    if (!isButtonDisabled) {
-      toast.info("Experiencing high traffic, Please wait a moment.", {
-        position: toast.POSITION.TOP_CENTER,
-        onOpen: () => setIsButtonDisabled(true),
-        onClose: () => setIsButtonDisabled(false),
-      });
-    }
+    setIsChatOpen(true);
+  };
+
+  const handleCloseChat = () => {
+    setIsChatOpen(false);
   };
 
   return (
@@ -104,7 +103,6 @@ function Navbar() {
       <button
         className="navbar-btn chat-btn"
         type="button"
-        disabled={isButtonDisabled}
         onClick={handleChatBtnClick}
       >
         <FontAwesomeIcon icon={faCommentDots} /> Live Chat
@@ -158,6 +156,9 @@ function Navbar() {
           className="hamb-icon"
         />
       </div>
+
+      {/* Live Chat Component */}
+      {isChatOpen && <LiveChat onClose={handleCloseChat} />}
     </div>
   );
 }

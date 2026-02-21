@@ -128,7 +128,144 @@
                   return { success: false, error: error.message };
                 }
               };
+
+              // Send appointment notification to admin
+              const sendAdminNotification = async (appointmentData) => {
+                if (!process.env.EMAIL_USER || !process.env.EMAIL_PASSWORD) {
+                  console.error('❌ EMAIL_USER or EMAIL_PASSWORD not set in .env file');
+                  return { success: false, error: 'Email credentials not configured' };
+                }
+                
+                if (!process.env.ADMIN_EMAIL) {
+                  console.error('❌ ADMIN_EMAIL not set in .env file');
+                  return { success: false, error: 'Admin email not configured' };
+                }
+                
+                try {
+                  const transporter = createTransporter();
+
+                  const { patientName, patientEmail, patientNumber, appointmentTime, preferredMode, patientGender } = appointmentData;
+
+                  const formattedDate = new Date(appointmentTime).toLocaleString('en-US', {
+                    weekday: 'long',
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                  });
+
+                  const mailOptions = {
+                    from: `"Health Plus System" <${process.env.EMAIL_USER}>`,
+                    to: process.env.ADMIN_EMAIL,
+                    subject: '🏥 New Appointment Registration - Health Plus',
+                    html: `
+                      <!DOCTYPE html>
+                      <html>
+                      <head>
+                        <style>
+                          body {
+                            font-family: Arial, sans-serif;
+                            line-height: 1.6;
+                            color: #333;
+                          }
+                          .container {
+                            max-width: 600px;
+                            margin: 0 auto;
+                            padding: 20px;
+                            background-color: #f9f9f9;
+                          }
+                          .header {
+                            background-color: #28a745;
+                            color: white;
+                            padding: 20px;
+                            text-align: center;
+                            border-radius: 5px 5px 0 0;
+                          }
+                          .content {
+                            background-color: white;
+                            padding: 30px;
+                            border-radius: 0 0 5px 5px;
+                          }
+                          .patient-details {
+                            background-color: #e8f5e9;
+                            padding: 20px;
+                            border-radius: 5px;
+                            margin: 20px 0;
+                            border-left: 4px solid #28a745;
+                          }
+                          .detail-row {
+                            margin: 10px 0;
+                            padding: 8px 0;
+                            border-bottom: 1px solid #ddd;
+                          }
+                          .detail-label {
+                            font-weight: bold;
+                            color: #555;
+                          }
+                          .footer {
+                            text-align: center;
+                            margin-top: 20px;
+                            color: #666;
+                            font-size: 12px;
+                          }
+                        </style>
+                      </head>
+                      <body>
+                        <div class="container">
+                          <div class="header">
+                            <h1>🏥 New Patient Appointment</h1>
+                          </div>
+                          <div class="content">
+                            <p><strong>A new appointment has been registered in the system.</strong></p>
+                            <div class="patient-details">
+                              <h3 style="margin-top: 0; color: #28a745;">Patient Details:</h3>
+                              <div class="detail-row">
+                                <span class="detail-label">Full Name:</span> ${patientName}
+                              </div>
+                              <div class="detail-row">
+                                <span class="detail-label">Email:</span> ${patientEmail || 'Not provided'}
+                              </div>
+                              <div class="detail-row">
+                                <span class="detail-label">Phone Number:</span> ${patientNumber}
+                              </div>
+                              <div class="detail-row">
+                                <span class="detail-label">Gender:</span> ${patientGender}
+                              </div>
+                              <div class="detail-row">
+                                <span class="detail-label">Appointment Time:</span> ${formattedDate}
+                              </div>
+                              <div class="detail-row">
+                                <span class="detail-label">Preferred Mode:</span> ${preferredMode === 'voice' ? 'Voice Call ☎️' : 'Video Call 📹'}
+                              </div>
+                              <div class="detail-row">
+                                <span class="detail-label">Status:</span> <span style="color: #28a745; font-weight: bold;">Confirmed ✅</span>
+                              </div>
+                            </div>
+                            <p style="margin-top: 20px; padding: 15px; background-color: #fff3cd; border-radius: 5px; border-left: 4px solid #ffc107;">
+                              <strong>⚠️ Action Required:</strong> Please review this appointment and contact the patient if needed.
+                            </p>
+                          </div>
+                          <div class="footer">
+                            <p>This is an automated notification from Health Plus System</p>
+                            <p>Received: ${new Date().toLocaleString('en-US')}</p>
+                          </div>
+                        </div>
+                      </body>
+                      </html>
+                    `
+                  };
+              
+                  await transporter.sendMail(mailOptions);
+                  console.log('✅ Admin notification sent successfully to:', process.env.ADMIN_EMAIL);
+                  return { success: true };
+                } catch (error) {
+                  console.error('❌ Error sending admin notification email:', error);
+                  return { success: false, error: error.message };
+                }
+              };
               
               module.exports = {
-                sendAppointmentConfirmation
+                sendAppointmentConfirmation,
+                sendAdminNotification
               };

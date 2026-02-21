@@ -4,8 +4,9 @@ const cors = require('cors');
 const bodyParser = require('body-parser');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const { sendAppointmentConfirmation } = require('./emailService');
+const { sendAppointmentConfirmation, sendAdminNotification } = require('./emailService');
 const authMiddleware = require('./authMiddleware');
+const chatRoute = require('./routes/chat');
 require('dotenv').config();
 
 const app = express();
@@ -290,7 +291,8 @@ app.post('/api/appointments', async (req, res) => {
 
     await appointment.save();
 
-    // Send confirmation email if email is provided
+    // Send confirmation email to patient if email is provided
+    let patientEmailSent = false;
     if (patientEmail) {
       const emailResult = await sendAppointmentConfirmation({
         patientName,
@@ -302,15 +304,32 @@ app.post('/api/appointments', async (req, res) => {
       });
 
       if (!emailResult.success) {
-        console.warn('⚠️ Failed to send confirmation email:', emailResult.error);
+        console.warn('⚠️ Failed to send confirmation email to patient:', emailResult.error);
+      } else {
+        patientEmailSent = true;
       }
+    }
+
+    // Send notification email to admin
+    const adminEmailResult = await sendAdminNotification({
+      patientName,
+      patientEmail,
+      patientNumber,
+      patientGender,
+      appointmentTime,
+      preferredMode
+    });
+
+    if (!adminEmailResult.success) {
+      console.warn('⚠️ Failed to send notification email to admin:', adminEmailResult.error);
     }
 
     res.status(201).json({ 
       success: true, 
       message: 'Appointment created successfully',
       data: appointment,
-      emailSent: patientEmail ? true : false
+      emailSent: patientEmailSent,
+      adminNotified: adminEmailResult.success
     });
   } catch (error) {
     res.status(500).json({ success: false, message: 'Error creating appointment', error: error.message });
@@ -356,6 +375,9 @@ app.delete('/api/appointments/:id', async (req, res) => {
     res.status(500).json({ success: false, message: 'Error deleting appointment', error: error.message });
   }
 });
+
+// Chat route
+app.use('/api/chat', chatRoute);
 
 // Health check
 app.get('/api/health', (req, res) => {
