@@ -83,6 +83,13 @@ function Navbar() {
             Doctors
           </a>
         </li>
+        {user && (
+          <li>
+            <Link to="/dashboard" className="navbar-links">
+              Dashboard
+            </Link>
+          </li>
+        )}
       </ul>
 
       {user ? (
@@ -140,6 +147,13 @@ function Navbar() {
               Doctors
             </a>
           </li>
+          {user && (
+            <li>
+              <Link onClick={openNav} to="/dashboard">
+                Dashboard
+              </Link>
+            </li>
+          )}
           <li>
             <a onClick={openNav} href="#contact">
               Contact

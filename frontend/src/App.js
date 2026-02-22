@@ -5,6 +5,7 @@ import Home from "./Pages/Home";
 import Legal from "./Pages/Legal";
 import NotFound from "./Pages/NotFound";
 import Appointment from "./Pages/Appointment";
+import Dashboard from "./Pages/Dashboard";
 import Login from "./Components/Login";
 import Signup from "./Components/Signup";
 
@@ -16,6 +17,7 @@ function App() {
           <Route path="/" element={<Home />} />
           <Route path="/legal" element={<Legal />} />
           <Route path="/appointment" element={<Appointment />} />
+          <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
           <Route path="*" element={<NotFound />} />
